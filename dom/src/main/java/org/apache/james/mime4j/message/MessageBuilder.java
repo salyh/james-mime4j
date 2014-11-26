@@ -55,7 +55,7 @@ import org.apache.james.mime4j.dom.field.UnstructuredField;
 import org.apache.james.mime4j.field.DefaultFieldParser;
 import org.apache.james.mime4j.field.Fields;
 import org.apache.james.mime4j.field.LenientFieldParser;
-import org.apache.james.mime4j.field.address.DefaultAddressBuilder;
+import org.apache.james.mime4j.field.address.DefaultAddressParser;
 import org.apache.james.mime4j.io.InputStreams;
 import org.apache.james.mime4j.parser.MimeStreamParser;
 import org.apache.james.mime4j.stream.BodyDescriptorBuilder;
@@ -309,7 +309,7 @@ public class MessageBuilder extends AbstractEntityBuilder {
     /**
      * Sets binary content of this message with the given MIME type.
      *
-     * @param body
+     * @param bin
      *            the body.
      * @param mimeType
      *            the MIME media type of the specified body
@@ -777,7 +777,7 @@ public class MessageBuilder extends AbstractEntityBuilder {
         if (mailbox == null) {
             removeFields(fieldName);
         } else {
-            setField(Fields.mailbox(fieldName, DefaultAddressBuilder.DEFAULT.parseMailbox(mailbox)));
+            setField(Fields.mailbox(fieldName, DefaultAddressParser.DEFAULT.parseMailbox(mailbox)));
         }
         return this;
     }
@@ -792,7 +792,7 @@ public class MessageBuilder extends AbstractEntityBuilder {
     }
 
     private MessageBuilder setMailboxList(String fieldName, String mailbox) throws ParseException {
-        return setMailboxList(fieldName, mailbox == null ? null : DefaultAddressBuilder.DEFAULT.parseMailbox(mailbox));
+        return setMailboxList(fieldName, mailbox == null ? null : DefaultAddressParser.DEFAULT.parseMailbox(mailbox));
     }
 
     private MessageBuilder setMailboxList(String fieldName, Mailbox... mailboxes) {
@@ -805,7 +805,7 @@ public class MessageBuilder extends AbstractEntityBuilder {
         } else {
             List<Mailbox> list = new ArrayList<Mailbox>();
             for (String mailbox: mailboxes) {
-                list.add(DefaultAddressBuilder.DEFAULT.parseMailbox(mailbox));
+                list.add(DefaultAddressParser.DEFAULT.parseMailbox(mailbox));
             }
             return list;
         }
@@ -834,7 +834,7 @@ public class MessageBuilder extends AbstractEntityBuilder {
     }
 
     private MessageBuilder setAddressList(String fieldName, String address) throws ParseException {
-        return setAddressList(fieldName, address == null ? null : DefaultAddressBuilder.DEFAULT.parseMailbox(address));
+        return setAddressList(fieldName, address == null ? null : DefaultAddressParser.DEFAULT.parseMailbox(address));
     }
 
     private MessageBuilder setAddressList(String fieldName, Address... addresses) {
@@ -847,7 +847,7 @@ public class MessageBuilder extends AbstractEntityBuilder {
         } else {
             List<Address> list = new ArrayList<Address>();
             for (String address: addresses) {
-                list.add(DefaultAddressBuilder.DEFAULT.parseAddress(address));
+                list.add(DefaultAddressParser.DEFAULT.parseAddress(address));
             }
             return list;
         }
@@ -898,7 +898,7 @@ public class MessageBuilder extends AbstractEntityBuilder {
         BodyDescriptorBuilder currentBodyDescBuilder = bodyDescBuilder != null ? bodyDescBuilder :
                 new DefaultBodyDescriptorBuilder(null, fieldParser != null ? fieldParser :
                         strict ? DefaultFieldParser.getParser() : LenientFieldParser.getParser(), currentMonitor);
-        BodyFactory currentBodyFactory = bodyFactory != null ? bodyFactory : new BasicBodyFactory();
+        BodyFactory currentBodyFactory = bodyFactory != null ? bodyFactory : new BasicBodyFactory(!strict);
         MimeStreamParser parser = new MimeStreamParser(currentConfig, currentMonitor, currentBodyDescBuilder);
 
         Message message = new MessageImpl();
